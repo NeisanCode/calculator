@@ -14,6 +14,7 @@ class CalculatorPage extends StatefulWidget {
 class _CalculatorPageState extends State<CalculatorPage> {
   String calculText = "";
   String resultText = "";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,9 +80,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
       switch (data.type) {
         case "action":
           if (data.text == "AC") {
-            calculText = "";
-            resultText = "";
+            _resetDisplay();
           }
+          break;
         case "number":
           calculText += data.text ?? "";
           break;
@@ -101,10 +102,14 @@ class _CalculatorPageState extends State<CalculatorPage> {
           break;
       }
     });
-
     setState(() {
-      resultText = autoCalculResult(calculText) ?? resultText;
+      resultText = autoCalculResult(calculText) ?? "";
     });
+  }
+
+  void _resetDisplay() {
+    calculText = "";
+    resultText = "";
   }
 
   Color _getButtonColor(ButtonData data) {

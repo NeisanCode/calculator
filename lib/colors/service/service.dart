@@ -1,13 +1,14 @@
 import 'package:math_expressions/math_expressions.dart';
 
 String? autoCalculResult(String userInput) {
-  if (!userInput.contains(RegExp(r'[+x÷-]'))) {
-    return "";
-  }
-  return null;
+  if (userInput.isEmpty) return null;
+  if (!userInput.contains(RegExp(r'[+x÷-]'))) return null;
+  if (!RegExp(r'\d$').hasMatch(userInput)) return null;
+  return calculateResult(userInput);
 }
 
 String calculateResult(String userInput) {
+  if (userInput.isEmpty) return "";
   var finalUserInput = userInput;
   finalUserInput = finalUserInput.replaceAll("x", "*").replaceAll("÷", "/");
 

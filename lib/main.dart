@@ -16,7 +16,8 @@ class MyApp extends StatelessWidget {
           backgroundColor: appColor,
           foregroundColor: appColor,
           iconTheme: IconThemeData(color: Colors.white),
-        ),      ),
+        ),
+      ),
       home: CalculatorPage(),
       debugShowCheckedModeBanner: false,
     );
