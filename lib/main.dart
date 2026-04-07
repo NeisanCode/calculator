@@ -13,9 +13,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         appBarTheme: AppBarTheme(
-          backgroundColor: appColor,
-          foregroundColor: appColor,
+          backgroundColor: background,
+          foregroundColor: background,
           iconTheme: IconThemeData(color: Colors.white),
+        ),
+        textTheme: TextTheme(bodyMedium: TextStyle(fontFamily: "Baloo2")),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            textStyle: WidgetStatePropertyAll(TextStyle(fontFamily: "Baloo2")),
+          ),
         ),
       ),
       home: CalculatorPage(),

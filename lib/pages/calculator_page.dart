@@ -1,4 +1,5 @@
-import 'package:calculator/colors/service/service.dart';
+import 'package:calculator/pages/helpers.dart';
+import 'package:calculator/service/service.dart';
 import 'package:flutter/material.dart';
 import 'package:calculator/colors/color.dart';
 import 'package:calculator/data/buttons.dart';
@@ -14,12 +15,20 @@ class CalculatorPage extends StatefulWidget {
 class _CalculatorPageState extends State<CalculatorPage> {
   String calculText = "";
   String resultText = "";
+  double c = 30;
+  bool showcalculText = true;
+  bool textExceed = false;
+  bool isPositive = true;
+  bool focusResult = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: appColor,
-      appBar: AppBar(leading: Icon(Icons.menu_rounded, color: Colors.orange)),
+      backgroundColor: background,
+      appBar: AppBar(
+        backgroundColor: background,
+        leading: Icon(Icons.calculate_rounded, color: Colors.white),
+      ),
       body: Column(
         children: [
           SizedBox(
@@ -31,19 +40,26 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    calculText,
-                    style: TextStyle(
-                      color: const Color.fromARGB(164, 255, 255, 255),
-                      fontSize: 30,
+                  if (showcalculText)
+                    Text(
+                      calculText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: textExceed ? 30 : 60,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
                   Text(
                     resultText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 50,
-                      fontWeight: FontWeight.bold,
+                      color: focusResult
+                          ? Colors.white
+                          : const Color.fromARGB(164, 255, 255, 255),
+                      fontSize: focusResult ? 60 : 30,
                     ),
                   ),
                 ],
@@ -64,7 +80,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
                 child: Button(
                   text: buttons[index].text,
                   icon: buttons[index].icon,
-                  color: _getButtonColor(buttons[index]),
+                  color: getButtonColor(buttons[index]),
                   onTap: () => onButtonPressed(buttons[index]),
                 ),
               ),
@@ -82,28 +98,42 @@ class _CalculatorPageState extends State<CalculatorPage> {
           if (data.text == "AC") {
             _resetDisplay();
           }
-          break;
-        case "number":
-          calculText += data.text ?? "";
-          break;
-        case "operator":
-          if (data.text == "=") {
-            resultText = calculateResult(calculText);
-            break;
+          if (data.text == "⌫") {
+            calculText = _deleteLastElement(calculText);
           }
-          calculText += data.text ?? "";
+          if (data.text == "%") {
+            togglePercent(calculText);
+            resultText = autoCalculResult(calculText) ?? "";
+          }
           break;
+
+        case "number":
+          showcalculText = true;
+          focusResult = false;
+          calculText += data.text ?? "";
+          textExceed = calculText.length >= 10;
+          resultText = autoCalculResult(calculText) ?? "";
+          break;
+
+        case "operator":
+          String op = data.text ?? "";
+          if (calculText.isEmpty && op == "-") calculText += op;
+          if (RegExp(r'[+x÷-]$').hasMatch(calculText)) return;
+          if (data.text == "=") {
+            resultText = autoCalculResult(calculText) ?? resultText;
+            calculText = "";
+            showcalculText = false;
+            focusResult = true;
+            return;
+          }
+          calculText += op;
+          break;
+
         case "toggle":
-          showDialog(
-            context: context,
-            builder: (context) =>
-                AlertDialog(title: Text("message"), content: Text("Toogle")),
-          );
+          toggleSign(calculText);
+          resultText = autoCalculResult(calculText) ?? "";
           break;
       }
-    });
-    setState(() {
-      resultText = autoCalculResult(calculText) ?? "";
     });
   }
 
@@ -112,14 +142,27 @@ class _CalculatorPageState extends State<CalculatorPage> {
     resultText = "";
   }
 
-  Color _getButtonColor(ButtonData data) {
-    switch (data.type) {
-      case "operator":
-        return buttonColorOperator;
-      case "action":
-        return buttonColorAction;
-      default:
-        return buttonColorNumber;
-    }
+  String _deleteLastElement(String s) {
+    if (s.isEmpty) return "";
+    return s.substring(0, s.length - 1);
+  }
+
+  void toggleSign(String text) {
+    String currentNumber = getCurrentNumber(text);
+    if (currentNumber.isEmpty) return;
+    final toggled = currentNumber.startsWith("-")
+        ? currentNumber.substring(1)
+        : "-$currentNumber";
+    calculText =
+        text.substring(0, text.length - currentNumber.length) + toggled;
+  }
+
+  void togglePercent(String text) {
+    if (text.isEmpty) return;
+    if (RegExp(r'[+x÷-]$').hasMatch(text)) return;
+    final toggled = text.endsWith("%")
+        ? text.substring(0, text.length - 1)
+        : "$text%";
+    calculText = toggled;
   }
 }
